@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!--
+ * Copyright (c) 2015 Roku, Inc. All rights reserved.
+ * This software and any compilation or derivative thereof is,
+ * and shall remain, the proprietary information of Roku, Inc. and
+ * is highly confidential in nature. Reproduction in whole or in part
+ * is prohibited without the prior written consent of Roku, Inc.
+ *
+ * Under no circumstance may this software or any derivative thereof be
+ * combined with any third party software, including open source software,
+ * without the written permission of the Copyright owner.
+-->
+
+<!-- An RSG Video node that implements its own (rudimentary) trickplay UI -->
+<component name="FullScreenCustomTrickPlayVideo" extends="Video">
+
+    <script type="text/brightscript" uri="pkg:/source/utils.brs" />
+
+    <script type="text/brightscript">
+        <![CDATA[
+            function init()
+                print m.top.subType() + ".init()"
+
+                ' Save references to objects we will be using a lot, so we don't have to use findNode() every time
+                m.video = m.top
+                m.bufferingStatusLabel = m.top.findNode("bufferingStatusLabel")
+                m.video.observeField("bufferingStatus", "bufferingStatusChanged")
+                bufferingStatusChanged()
+
+                m.stateLabel = m.top.findNode("stateLabel")
+                m.video.observeField("state", "stateChanged")
+                stateChanged()
+
+                m.lastKeyLabel = m.top.findNode("lastKeyLabel")
+
+                m.trickPlayLabel = m.top.findNode("trickPlayLabel")
+
+                content = createObject("RoSGNode", "ContentNode")
+                content.URL = "http://roku.cpl.delvenetworks.com/media/59021fabe3b645968e382ac726cd6c7b/f8de8daf2ba34aeb90edc55b2d380c3f/b228eeaba0f248c48e01e158f99cd96e/rr_123_segment_1_072715.mp4"
+                content.title = "Test Stream"
+                content.videoDisableUI = true
+                m.video.content = content
+
+                m.video.control = "play"
+            end function
+
+            function stateChanged() 
+                m.stateLabel.text = roToStringInv(m.video.state, "--")
+            end function
+
+            function bufferingStatusChanged()
+                m.bufferingStatusLabel.text = roToStringInv(m.video.bufferingStatus, "--")
+            end function
+
+            ' This will not be called when the OPTIONS ( * ) key is pressed, because that key
+            ' is reserved for use by the platform
+            function onKeyEvent(key as String, press as Boolean) as Boolean
+                
+                if not press
+                    return false
+                end if
+
+                m.lastKeyLabel.text = roToStringInv(key, "--")
+
+                if key = "back"
+                    return false
+
+                else if key = "left"
+                    newPos = m.video.position - 30
+                    if newPos < 0 then
+                        newPos = 0
+                    end if
+                    print "Jump back! Seeking to (seconds): " + Str(newPos)
+                    m.video.seek = newPos
+                
+                else if key = "right"
+                    newPos = m.video.position + 30
+                    print "Jump ahead! Seeking to (seconds): " + Str(newPos)
+                    m.video.seek = newPos
+
+                else if key = "options"
+                    ' This should not be called when the OPTIONS ( * ) key is pressed, because that key
+                    ' is reserved for use by the platform
+                    print "OPTIONS key pressed"
+                    return true
+                end if
+
+                return true
+            end function
+        ]]>
+    </script>
+
+    <children>
+        <Label text="Trick play functionality and UI are overridden"
+            translation="[100,330]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="Key pressed will be displayed"
+            translation="[100,370]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="Trick play bar should NOT appear"
+            translation="[100,410]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="Buffering and re-buffering progress bars should NOT appear"
+            translation="[100,450]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="Left/Right should jump back/forward 30 seconds"
+            translation="[100,490]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+
+        <Label text="State:"
+            translation="[100, 570]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text=""
+            translation="[200, 570]" font="font:LargeBoldSystemFont" color="0xFFFF00FF" id="stateLabel"/>
+
+        <Label text="Buffering Status:"
+            translation="[400, 570]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text=""
+            translation="[670, 570]" font="font:LargeBoldSystemFont" color="0xFFFF00FF" id="bufferingStatusLabel"/>
+
+        <Label text="Key pressed:"
+            translation="[100,610]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="--"
+            translation="[300,610]" font="font:LargeBoldSystemFont" color="0xFFFF00FF" id="lastKeyLabel"/>
+
+    </children>
+
+</component>

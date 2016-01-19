@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!--
+ * Copyright (c) 2015 Roku, Inc. All rights reserved.
+ * This software and any compilation or derivative thereof is,
+ * and shall remain, the proprietary information of Roku, Inc. and
+ * is highly confidential in nature. Reproduction in whole or in part
+ * is prohibited without the prior written consent of Roku, Inc.
+ *
+ * Under no circumstance may this software or any derivative thereof be
+ * combined with any third party software, including open source software,
+ * without the written permission of the Copyright owner.
+-->
+
+<!-- An RSG Video node that demonstrates access to information about segmented
+     video download status. Common segmented video formats are HLS and DASH.
+-->
+<component name="SegmentInfoVideo" extends="Video">
+
+    <script type="text/brightscript">
+        <![CDATA[
+            function init()
+                print m.top.subType() + ".init()"
+
+                ' Save references to objects we will be using a lot, so we don't have to use findNode() every time
+                m.video = m.top
+                m.durationLabel = m.top.findNode("durationLabel")
+                m.positionLabel = m.top.findNode("positionLabel")
+                m.segBitrateBpsLabel = m.top.findNode("segBitrateBpsLabel")
+                m.segSequenceLabel = m.top.findNode("segSequenceLabel")
+                m.segStartTimeLabel = m.top.findNode("segStartTimeLabel")
+                m.segUrlLabel = m.top.findNode("segUrlLabel")
+
+                m.video.observeField("duration", "durationChanged")
+                m.video.observeField("position", "positionChanged")
+                m.video.notificationInterval = 0.1
+                m.video.observeField("streamingSegment", "streamingSegmentChanged")
+
+                content = createObject("RoSGNode", "ContentNode")
+
+                content.URL = "https://roku.s.cpl.delvenetworks.com/media/59021fabe3b645968e382ac726cd6c7b/f8de8daf2ba34aeb90edc55b2d380c3f/rr_123_segment_1_072715-9107928d097199cec686e3f26a3f81b6ca07c3e1.m3u8"
+                content.streamformat = "hls"
+
+                m.video.content = content
+                m.video.control = "play"
+            end function
+
+            function onKeyEvent(key as String, press as Boolean) as Boolean
+                print "segmentInfo.onKeyEvent()"
+                if not press
+                    return false
+                end if
+
+                if key = "OK"
+                    dumpStreamingSegment()
+                    return false  ' if we are bif-jumping, video node will handle OK and re-start video
+                end if
+
+                return false
+            end function ' onKeyEvent()
+
+            function durationChanged()
+                'print "durationChanged()"
+                label = str(m.video.duration) + "s"
+                m.durationLabel.text = label
+            end function
+
+            function positionChanged()
+                'print "positionChanged()"
+                label = str(m.video.position) + "s"
+                m.positionLabel.text = label
+            end function
+
+            function streamingSegmentChanged()
+                'print "streamingSegmentChanged()"
+                dumpStreamingSegment()
+
+                positionChanged()
+                info = m.video.streamingSegment
+                m.segBitrateBpsLabel.text = info["segBitrateBps"]
+                m.segSequenceLabel.text = info["segSequence"]
+                m.segStartTimeLabel.text = str(info["segStartTime"]) + "s"
+                m.segUrlLabel.text = info["segUrl"]
+
+            end function
+
+            function buildMetaDataString() as String
+                s = ""
+                metaData = m.video.timedMetaData
+                if (metaData = invalid) or (metaData.count() = 0)
+                    s = "<<NONE>>"
+                else
+                    s = "keys=["
+                    i = -1
+                    metaData.reset()
+                    while metaData.isNext()
+                        if len(s) > 50
+                            s = s + "..."
+                            exit while
+                        end if
+
+                        i = i + 1
+                        key = metaData.next()
+                        if (i > 0)
+                            s = s + ", "
+                        end if
+                        s = s + key
+                    end while
+                    s = s + "]"
+                end if
+                return s
+            end function
+ 
+            function dumpStreamingSegment()
+                print "video state = " + m.video.state
+                info = m.video.streamingSegment
+                if (info = invalid) or (info.count() = 0)
+                    print "NO streaming segment"
+                else
+                    info.reset()
+                    while info.isNext()
+                        key = info.next()
+                        value = info[key]
+                        if type(value) = "roString"
+                            print "    " + key + " : " + info[key]
+                        else
+                            print "    " + key + " : " + str(info[key])
+                        end if
+                    end while
+                end if
+            end function
+        ]]>
+    </script>
+
+    <children>
+        <Label text="position:"
+            translation="[50,260]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="--"
+            id="positionLabel" translation="[275,260]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+
+        <Label text="duration:"
+            translation="[50,300]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="--"
+            id="durationLabel" translation="[275,300]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+
+        <Label text="segBitrateBps:"
+            translation="[50,340]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="--"
+            id="segBitrateBpsLabel" translation="[275,340]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+
+        <Label text="segSequence:"
+            translation="[50,380]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="--"
+            id="segSequenceLabel" translation="[275,380]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+
+        <Label text="segStartTime:"
+            translation="[50,420]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="--"
+            id="segStartTimeLabel" translation="[275,420]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+
+        <Label text="segUrl:"
+            translation="[50,460]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="--"
+            id="segUrlLabel" translation="[275,460]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+
+    </children>
+
+</component>

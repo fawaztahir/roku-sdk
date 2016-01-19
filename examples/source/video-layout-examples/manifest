@@ -5,10 +5,10 @@
 #
 
 ##   Channel Details
-title=Hellow World
+title=Roku SceneGraph Video Examples
 major_version=1
 minor_version=0
-build_version=00001
+build_version=121
 
 ##   Channel Assets
 ###  Main Menu Icons / Channel Poster Artwork 
@@ -23,5 +23,7 @@ splash_screen_fhd=pkg:/images/splash-screen_fhd.jpg
 splash_screen_hd=pkg:/images/splash-screen_hd.jpg
 splash_screen_sd=pkg:/images/splash-screen_sd.jpg
 
+ui_resolutions=hd
+
 splash_color=#000000
-splash_min_time=1
+splash_min_time=3000

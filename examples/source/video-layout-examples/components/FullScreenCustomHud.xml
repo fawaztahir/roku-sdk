@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!--
+ * Copyright (c) 2015 Roku, Inc. All rights reserved.
+ * This software and any compilation or derivative thereof is,
+ * and shall remain, the proprietary information of Roku, Inc. and
+ * is highly confidential in nature. Reproduction in whole or in part
+ * is prohibited without the prior written consent of Roku, Inc.
+ *
+ * Under no circumstance may this software or any derivative thereof be
+ * combined with any third party software, including open source software,
+ * without the written permission of the Copyright owner.
+-->
+
+<!-- A full-screen Video with content that also has BIFs. The BIFs are still images that
+     appear when the user presses LEFT, RIGHT, FF, or REW. The BIFs allow the user 
+     to quickly navigate through the video.
+-->
+<component name="FullScreenCustomHudVideo" extends="Video">
+
+    <interface>
+        <field id="title" type="string" value="1280 x 720"/>
+    </interface>
+
+    <script type="text/brightscript" uri="pkg:/source/utils.brs" />
+    <script type="text/brightscript">
+    <![CDATA[
+        function init()
+            print m.top.subType() + ".init()"
+
+            video = m.top
+            m.video = video
+            print "init(): trickPlayBar = " + roToString(m.top.trickPlayBar)
+
+            content = createObject("RoSGNode", "ContentNode")
+            content.URL = "http://10.2.224.95:8000/Movies/HarryPotter/HLS/600000/prog_index.m3u8"
+            content.streamformat = "hls"
+            'content.sdbifurl = "https://image.roku.com/blog/developer/files/2015/11/rr_123_segment_1_072715-sd.bif"
+            content.hdbifurl = "http://10.2.224.95:8000/Movies/HarryPotter/bif/harry-potter-hd.bif"
+            m.video.focusable = true
+            m.video.content = content
+            m.video.control = "play"
+
+            m.hud = m.top.findNode("hud")
+            m.video.trickPlayBar.reparent(m.hud, true)
+            m.video.trickPlayBarVisibilityAuto = false
+            m.video.trickPlayBar.visible = true
+            m.video.trickPlayBar.translation = [50,100]
+            m.video.observeField("trickPlayBarVisibilityHint", "hudVisibilityRequest")
+        end function 'init()
+
+        sub hudVisibilityRequest()
+            print m.top.subType() + ".hudVisibilityRequest(), video.trickPlayBarVisibilityHint =" + roToString(m.video.trickPlayBarVisibilityHint)
+            newVisible = m.video.trickPlayBarVisibilityHint
+
+            if newVisible
+                m.hud.visible = true
+                m.video.trickPlayBar.visible = true
+                anim = m.top.findNode("hudAnimShow")
+            else
+                anim = m.top.findNode("hudAnimHide")
+            endif
+            anim.control = "start"
+
+        end sub
+
+        function onKeyEvent(key as String, press as Boolean) as Boolean
+            print "custom trickPlay.onKeyEvent()"
+            if not press
+                return false
+            end if
+
+            if key = "OK"
+                dumpInfo()
+                return true
+            end if
+
+            return false
+        end function
+
+        sub dumpInfo()
+            tpbar = m.top.trickPlayBar
+            print "-------------- INFO ------------------"
+            print "trickPlayBar = " + roToString(m.top.trickPlayBar)
+            print "hud translation = " +roToString(m.hud.translation)
+            print "--------------------------------------"
+        end sub
+
+    ]]>
+    </script>
+
+    <children>
+        <Label text="Video should play full screen"
+            translation="[50,420]" font="font:LargeSystemFont" color="0xFFFF00FF"/>
+        <Label text="TrickPlay should work, including BIFs and trickPlay bar"
+            translation="[50,460]" font="font:LargeSystemFont" color="0xFFFF00FF"/>
+        <Label text="TrickPlay should should animate a custom HUD from the bottom"
+            translation="[50,500]" font="font:LargeSystemFont" color="0xFFFF00FF"/>
+        <Group id="hud" translation="[0,720]">
+            <Label text="Custom HUD" translation="[550,50]"/>
+        </Group>
+        <Animation id="hudAnimHide"
+            duration="1"
+            easeFunction="inCubic">
+            <Vector2DFieldInterpolator id="hudAnimHideInterp"
+                fieldToInterp="hud.translation"
+                key="[0.0,1.0]"
+                keyValue="[[0,500],[0,720]]"
+            />
+        </Animation>
+        <Animation id="hudAnimShow"
+            duration="1"
+            easeFunction="inQuartic">
+            <Vector2DFieldInterpolator id="hudAnimShowInterp"
+                fieldToInterp="hud.translation"
+                key="[0.0,1.0]"
+                keyValue="[[0,720],[0,500]]"
+            />
+        </Animation>
+    </children>
+
+
+</component>

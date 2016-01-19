@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!--
+ * Copyright (c) 2015 Roku, Inc. All rights reserved.
+ * This software and any compilation or derivative thereof is,
+ * and shall remain, the proprietary information of Roku, Inc. and
+ * is highly confidential in nature. Reproduction in whole or in part
+ * is prohibited without the prior written consent of Roku, Inc.
+ *
+ * Under no circumstance may this software or any derivative thereof be
+ * combined with any third party software, including open source software,
+ * without the written permission of the Copyright owner.
+-->
+
+<!-- An RSG Video node within a Group, to show how a Video node can be
+     incorporated as an element into a UI.
+-->
+<component name="VideoGroup" extends="Group">
+
+    <interface>
+        <field id="initialFocus" type="node"/>
+    </interface>
+
+    <script type="text/brightscript">
+        <![CDATA[
+            function init()
+                print m.top.subType() + ".init()"
+
+                group = m.top
+                video = m.top.findNode("video")
+
+                group.translation = [50,50]
+                group.focusable = true
+
+                content = createObject("RoSGNode", "ContentNode")
+                content.URL = "http://roku.cpl.delvenetworks.com/media/59021fabe3b645968e382ac726cd6c7b/f8de8daf2ba34aeb90edc55b2d380c3f/b228eeaba0f248c48e01e158f99cd96e/rr_123_segment_1_072715.mp4"
+
+                video.content = content
+                video.control = "play"
+                group.initialFocus = video
+            end function
+
+        ]]>
+    </script>
+
+    <children>
+        <Video id="video" width="640" height="360" focusable="true"/>
+        <Label text="Video should be located immediately above this label"
+            translation="[0,370]"/>
+        <Label text="Video should NOT be clipped by the screen or any of this text"
+            translation="[0,420]"/>
+        <Label text="TrickPlay should work (focusable=true) but with NO visual feedback."
+            translation="[0,470]"/>
+        <ContentNode id="sharedData"/>
+    </children>
+
+</component>

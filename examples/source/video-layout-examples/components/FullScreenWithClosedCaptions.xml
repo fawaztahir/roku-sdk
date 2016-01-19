@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!--
+ * Copyright (c) 2015 Roku, Inc. All rights reserved.
+ * This software and any compilation or derivative thereof is,
+ * and shall remain, the proprietary information of Roku, Inc. and
+ * is highly confidential in nature. Reproduction in whole or in part
+ * is prohibited without the prior written consent of Roku, Inc.
+ *
+ * Under no circumstance may this software or any derivative thereof be
+ * combined with any third party software, including open source software,
+ * without the written permission of the Copyright owner.
+-->
+
+<!--
+ * This example has been removed from the main menu, due to the lack
+ * of a licensed video with captions that can be used for a demo. When
+ * a video becomes available, this example should be updated and
+ * added back into the main menu.
+-->
+
+<component name="FullScreenWithClosedCaptionsVideo" extends="Video">
+
+    <interface>
+        <field id="title" type="string" value="1280 x 720"/>
+    </interface>
+
+    <script type="text/brightscript">
+        <![CDATA[
+            function init()
+                print m.top.subType() + ".init()"
+                m.video = m.top
+
+                m.video.observeField("subtitleTrack", "subtitleTrackChanged")
+                m.video.observeField("availableSubtitleTracks", "availableSubtitleTracksChanged")
+                m.subtitleCountLabel = m.top.findNode("subtitleCountLabel")
+                m.subtitleLabel = m.top.findNode("subtitleLabel")
+
+                content = createObject("RoSGNode", "ContentNode")
+                content.URL = "http://10.2.224.95:8000/Clips/ClosedCaptionTests/CEAv1.2zero.h264.trp"
+                content.streamformat = "ts"
+                content.SubtitleTracks = [
+                    {TrackName: "eia608/1", Description:"Track 1", Language:"eng"}, 
+                    {TrackName: "eia608/3", Description:"Track 2", Language:"eng"},
+                ]
+                content.SubtitleConfig = {ShowSubtitle:1, TrackName:"eia608/1"}
+                m.video.content = content
+                'm.video.translation = [50,50]
+                'm.video.width = 320
+                'm.video.height = 180
+                m.video.control = "play"
+            end function
+
+            function onKeyEvent(key as String, press as Boolean) as Boolean
+                print "captiontest.onKeyEvent()"
+                if not press
+                    return false
+                end if
+
+                if key = "OK"
+                    dumpSubtitleInfo()
+                    return true
+                else if key = "down"
+                    if (m.video.translation[0] > 0)
+                        ' Go to full screen video
+                        m.video.translation = [0,0]
+                        m.video.width = 0
+                        m.video.height = 0
+                    else
+                        ' Go to windowed video
+                        m.video.translation = [50,50]
+                        m.video.width = 320
+                        m.video.height = 180
+                    end if
+                else if key = "up"
+                    avail = m.video.availableSubtitleTracks
+                    index = findTrackIndex()
+                    index = index + 1
+                    if index >= avail.count()
+                        index = 0
+                    end if
+                    print "new subtitle index: " + str(index)
+                    print "new subtitle track: " + avail[index].trackName
+                    m.video.subtitleTrack = avail[index].trackName
+                    return true
+                end if
+
+                return false
+            end function ' onKeyEvent()
+
+            function availableSubtitleTracksChanged()
+                print "availableSubtitleTrackChanged()"
+                dumpSubtitleInfo()
+                m.subtitleCountLabel.text = str(m.video.availableSubtitleTracks.count())
+            end function
+
+            function subtitleTrackChanged()
+                print "subtitleTrackChanged(), subtitleTrack = " + m.video.subtitleTrack + chr(10);
+                m.subtitleLabel.text = m.video.subtitleTrack
+            end function
+
+            function findTrackIndex() as Integer
+                index = -1
+                track = m.video.subtitleTrack
+                avail = m.video.availableSubtitleTracks
+                for i = 0 to avail.count() - 1
+                    if track = avail[i].trackName
+                        index = i
+                        exit for
+                    end if
+                end for
+                if index < 0
+                    index = 0
+                end if
+                return index
+            end function
+
+            function dumpSubtitleInfo()
+                print "video state = " + m.video.state
+                if (m.video.availableSubtitleTracks = invalid) or (m.video.availableSubtitleTracks.count() = 0)
+                    print "NO subtitle tracks"
+                else
+                    for each track in m.video.availableSubtitleTracks
+                        if (track = invalid) or (track.isEmpty())
+                            print "available subtitle track: INVALID"
+                        else
+                            print "available subtitle track:"
+                            track.reset()
+                            while track.isNext()
+                                key = track.next()
+                                print "    " + key + " : " + track[key]
+                            end while
+                        end if
+                    end for
+                    print "selected subtitleTrack = " + m.video.subtitleTrack + chr(10);
+                end if
+            end function
+        ]]>
+    </script>
+
+    <children>
+        <Label text="Video should play full screen"
+            translation="[50,200]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="Closed captions should appear on the screen"
+            translation="[50,240]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="Pressing * should bring up Closed Caption Selection dialog"
+            translation="[50,280]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="CC dialog should show two tracks at beginning, then four tracks"
+            translation="[50,320]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+
+        <Label text="Number of subtitle tracks:"
+            translation="[50,400]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="--"
+            id="subtitleCountLabel" translation="[450,400]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+
+        <Label text="Current subtitle track:"
+            translation="[50,440]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="--"
+            id="subtitleLabel" translation="[450,440]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+
+        <Label text="Use CC dialog and/or PRESS UP TO CHANGE TRACK"
+            translation="[50,500]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="Press DOWN to toggle full-screen &lt;-> windowed video"
+            translation="[50,540]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="(when windowed, there will be no captions; '*' will not bring up dialog)"
+            translation="[75,580]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+    </children>
+
+</component>

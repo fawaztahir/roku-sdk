@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!--
+ * Copyright (c) 2015 Roku, Inc. All rights reserved.
+ * This software and any compilation or derivative thereof is,
+ * and shall remain, the proprietary information of Roku, Inc. and
+ * is highly confidential in nature. Reproduction in whole or in part
+ * is prohibited without the prior written consent of Roku, Inc.
+ *
+ * Under no circumstance may this software or any derivative thereof be
+ * combined with any third party software, including open source software,
+ * without the written permission of the Copyright owner.
+-->
+
+<!--
+ * This has been removed from the main menu of this app, because there
+ * is no publicly available video with multiple audio tracks to use
+ * for demonstration purposes. When a video is available, this should
+ * be tested and re-enabled.
+-->
+
+<component name="MultipleAudioTrackVideo" extends="Video">
+
+    <script type="text/brightscript">
+        <![CDATA[
+            function init()
+                print m.top.subType() + ".init()"
+                m.video = m.top
+
+                m.video.observeField("audioTrack", "audioTrackChanged")
+                m.video.observeField("availableAudioTracks", "availableAudioTracksChanged")
+                m.audioCountLabel = m.top.findNode("audioCountLabel")
+                m.audioLabel = m.top.findNode("audioLabel")
+
+                content = createObject("RoSGNode", "ContentNode")
+                content.URL = "http://10.2.224.95:8000/Clips/MultipleAudioTests/1080p_TwoAacAudio.mkv"
+                content.streamformat = "mkv"
+                m.video.content = content
+                m.video.control = "play"
+            end function
+
+            function onKeyEvent(key as String, press as Boolean) as Boolean
+                print "audiotest.onKeyEvent()"
+                if not press
+                    return false
+                end if
+
+                if key = "OK"
+                    dumpAudioInfo()
+                    return true
+
+                else if key = "up"
+                    avail = m.video.availableAudioTracks
+                    index = findTrackIndex()
+                    index = index + 1
+                    if index >= avail.count()
+                        index = 0
+                    end if
+                    print "new audio index: " + str(index)
+                    print "new audio track: " + avail[index].track
+                    m.video.audioTrack = avail[index].track
+                    return true
+                end if
+
+                return false
+            end function ' onKeyEvent()
+
+            function availableAudioTracksChanged()
+                print "availableAudioTrackChanged()"
+                dumpAudioInfo()
+                m.audioCountLabel.text = str(m.video.availableAudioTracks.count())
+            end function
+
+            function audioTrackChanged()
+                print "audioTrackChanged(), audioTrack = " + m.video.audioTrack + chr(10);
+                m.audioLabel.text = m.video.audioTrack
+            end function
+
+            ' Returns -1 if current track not found in available tracks
+            function findTrackIndex() as Integer
+                index = -1
+                track = m.video.audioTrack
+                avail = m.video.availableAudioTracks
+                for i = 0 to avail.count() - 1
+                    if track = avail[i].track
+                        index = i
+                        exit for
+                    end if
+                end for
+                return index
+            end function
+
+            function dumpAudioInfo()
+                print "video state = " + m.video.state
+                if (m.video.availableAudioTracks = invalid) or (m.video.availableAudioTracks.count() = 0)
+                    print "NO audio tracks"
+                else
+                    for each track in m.video.availableAudioTracks
+                        if (track = invalid) or (track.isEmpty())
+                            print "available audio track: INVALID"
+                        else
+                            print "available audio track:"
+                            track.reset()
+                            while track.isNext()
+                                key = track.next()
+                                print "    " + key + " : " + track[key]
+                            end while
+                        end if
+                    end for
+                    print "selected audioTrack = " + m.video.audioTrack + chr(10);
+                end if
+            end function
+        ]]>
+    </script>
+
+    <children>
+        <Label text="Video should play full screen"
+            translation="[50,240]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="Video should have two audio tracks"
+            translation="[50,280]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+
+        <Label text="Number of audio tracks:"
+            translation="[50,400]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="--"
+            id="audioCountLabel" translation="[450,400]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+
+        <Label text="Current audio track:"
+            translation="[50,440]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="--"
+            id="audioLabel" translation="[450,440]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+
+        <Label text="PRESS UP TO CHANGE TRACK"
+            translation="[50,500]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+    </children>
+
+</component>

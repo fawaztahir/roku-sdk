@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!--
+ * Copyright (c) 2015 Roku, Inc. All rights reserved.
+ * This software and any compilation or derivative thereof is,
+ * and shall remain, the proprietary information of Roku, Inc. and
+ * is highly confidential in nature. Reproduction in whole or in part
+ * is prohibited without the prior written consent of Roku, Inc.
+ *
+ * Under no circumstance may this software or any derivative thereof be
+ * combined with any third party software, including open source software,
+ * without the written permission of the Copyright owner.
+-->
+
+<!-- Demonstrates custom colors for trickplay bar, retrieving bar, buffering bar.
+-->
+<component name="FullScreenCustomColorsVideo" extends="Video">
+
+    <interface>
+        <field id="title" type="string" value="1280 x 720"/>
+    </interface>
+
+    <script type="text/brightscript" uri="pkg:/source/utils.brs" />
+    <script type="text/brightscript">
+    <![CDATA[
+        function init()
+            print m.top.subType() + ".init()"
+
+            video = m.top
+            m.video = video
+            print "init(): trickPlayBar = " + roToString(m.top.trickPlayBar)
+
+            bif = m.video.bifDisplay
+            bif.frameBgBlendColor = "0x0000FFFF"
+            bif.frameBgImageUri = "pkg:/images/bifFrame.png"
+
+            ' Customize the trick play bar (has most progress bar attributes, plus a few extra)
+            tpbar = m.video.trickPlayBar
+            customizeProgressBar(tpbar)
+            tpbar.completedBarImageUri = "pkg:/images/progressFilledBar.png"
+            tpbar.completedBarBlendColor = "0x0000FFFF"
+            tpbar.currentTimeMarkerBlendColor = "0xFF0000FF"
+            tpbar.hashMarkBlendColor = "0x2020FFFF"
+            tpbar.thumbBlendColor = "0x0000FFFF"
+            tpbar.textColor = "0x0000FFFF"
+
+            ' Customize the retrieving bar
+            customizeProgressBar(video.retrievingBar)
+            video.retrievingTextColor = "0x0000FFFF"
+            customizeProgressBar(video.bufferingBar)
+            video.bufferingTextColor = "0x0000FFFF"
+
+            print "UI customization done"
+
+            content = createObject("RoSGNode", "ContentNode")
+            content.URL = "http://10.2.224.95:8000/Movies/HarryPotter/HLS/600000/prog_index.m3u8"
+            content.streamformat = "hls"
+            'content.sdbifurl = "https://image.roku.com/blog/developer/files/2015/11/rr_123_segment_1_072715-sd.bif"
+            content.hdbifurl = "http://10.2.224.95:8000/Movies/HarryPotter/bif/harry-potter-hd.bif"
+            m.video.focusable = true
+            m.video.content = content
+            m.video.control = "play"
+
+        end function 'init()
+
+        sub customizeProgressBar(progressBar as Dynamic)
+            bar = progressBar
+            print "bar = " + roToString(bar)
+            if bar <> invalid
+                bar.trackImageUri = "pkg:/images/progressFrame.9.png"
+                bar.trackBlendColor = "0x0000FFFF"
+                bar.emptyBarImageUri = "pkg:/images/progressEmptyBar.png"
+                bar.emptyBarBlendColor = "0x0000FFFF"
+                bar.filledBarImageUri = "pkg:/images/progressFilledBar.png"
+                bar.filledBarBlendColor = "0x0000FFFF"
+            end if
+        end sub
+
+        function onKeyEvent(key as String, press as Boolean) as Boolean
+            print "custom trickPlay.onKeyEvent()"
+            if not press
+                return false
+            end if
+
+            return false
+        end function
+
+    ]]>
+    </script>
+
+    <children>
+        <Label text="Video should play full screen"
+            translation="[50,420]" font="font:LargeSystemFont" color="0xFFFF00FF"/>
+        <Label text="TrickPlay should work, including BIFs and trickPlay bar"
+            translation="[50,460]" font="font:LargeSystemFont" color="0xFFFF00FF"/>
+        <Label text="All TrickPlay, Retrieving, Buffering, and BIF elements should dark blue"
+            translation="[50,500]" font="font:LargeSystemFont" color="0xFFFF00FF"/>
+        <Label text="The bars themselves should be color gradients"
+            translation="[50,540]" font="font:LargeSystemFont" color="0xFFFF00FF"/>
+    </children>
+
+</component>

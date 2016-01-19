@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!--
+ * Copyright (c) 2015 Roku, Inc. All rights reserved.
+ * This software and any compilation or derivative thereof is,
+ * and shall remain, the proprietary information of Roku, Inc. and
+ * is highly confidential in nature. Reproduction in whole or in part
+ * is prohibited without the prior written consent of Roku, Inc.
+ *
+ * Under no circumstance may this software or any derivative thereof be
+ * combined with any third party software, including open source software,
+ * without the written permission of the Copyright owner.
+-->
+
+<!-- An RSG Video node that displays the current position within the video
+     stream and allows the update interval to be modified with the
+     remote control.
+-->
+<component name="AdjustablePositionIndicatorVideo" extends="Video">
+
+<script type="text/brightscript">
+<![CDATA[
+    function init()
+        print m.top.subType() + ".init()"
+
+        m.video = m.top
+        m.positionLabel = m.top.findNode("positionLabel")
+        m.intervalLabel = m.top.findNode("intervalLabel")
+
+        m.video.focusable = true
+        m.video.notificationInterval = 0.1
+        m.intervalLabel.text = Str(m.video.notificationInterval)
+        m.video.translation = [50,50]
+        m.video.width = 640
+        m.video.height = 360
+        m.video.observeField("position", "positionChanged")
+        m.video.observeField("notificationInterval", "notificationIntervalChanged")
+
+        content = createObject("RoSGNode", "ContentNode")
+        content.URL = "http://roku.cpl.delvenetworks.com/media/59021fabe3b645968e382ac726cd6c7b/f8de8daf2ba34aeb90edc55b2d380c3f/b228eeaba0f248c48e01e158f99cd96e/rr_123_segment_1_072715.mp4"
+        m.video.content = content
+        m.video.control = "play"
+    end function
+
+    function positionChanged()
+        dsecs = m.video.position ' seconds as a double
+        m.positionLabel.text = Str(dsecs)
+    end function
+
+    function notificationIntervalChanged()
+        print "notificationIntervalChanged()"
+        dsecs = m.video.notificationInterval    ' seconds as a double
+        m.intervalLabel.text = Str(dsecs)
+    end function
+
+    function onKeyEvent(key as String, press as Boolean) as Boolean
+        print "AdjustablePositionIndicatorVideo.onKeyEvent() key=";key;" press="; press
+        prevInterval = m.video.notificationInterval
+        newInterval = invalid
+        if press then
+            if key = "up"
+                newInterval = prevInterval * 1.25
+                if ((newInterval - prevInterval) < 0.001)
+                    ' Round-off is causing multiplication to go nowhere (typically around 0.001)
+                    newInterval = prevInterval + 0.001
+                end if
+            else if key = "down"
+                newInterval = prevInterval * 0.75
+            end if
+        end if
+
+        if (newInterval <> invalid) 
+            m.video.notificationInterval = newInterval
+            return true
+        end if
+
+        return false
+    end function
+]]>
+</script>
+
+<children>
+    <Label text="Video should play above this label"
+        translation="[0, 370]" />
+    <Label text="TrickPlay should work (with NO visual feedback)"
+        translation="[0, 410]" />
+    <Label text="Notification interval (UP/DOWN to adjust):"
+        translation="[0, 450]"/>
+    <Label text="--"
+        translation="[520, 450]" id="intervalLabel"/>
+    <Label text="Current position (should update): "
+        translation="[0, 490]"/>
+    <Label text="--"
+        translation="[400, 490]" id="positionLabel"/>
+</children>
+
+</component>

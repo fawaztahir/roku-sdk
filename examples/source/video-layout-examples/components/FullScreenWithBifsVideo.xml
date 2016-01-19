@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!--
+ * Copyright (c) 2015 Roku, Inc. All rights reserved.
+ * This software and any compilation or derivative thereof is,
+ * and shall remain, the proprietary information of Roku, Inc. and
+ * is highly confidential in nature. Reproduction in whole or in part
+ * is prohibited without the prior written consent of Roku, Inc.
+ *
+ * Under no circumstance may this software or any derivative thereof be
+ * combined with any third party software, including open source software,
+ * without the written permission of the Copyright owner.
+-->
+
+<!-- A full-screen Video with content that also has BIFs. The BIFs are still images that
+     appear when the user presses LEFT, RIGHT, FF, or REW. The BIFs allow the user 
+     to quickly navigate through the video.
+-->
+<component name="FullScreenWithBifsVideo" extends="Video">
+
+    <interface>
+        <field id="title" type="string" value="1280 x 720"/>
+    </interface>
+
+    <script type="text/brightscript">
+        <![CDATA[
+            function init()
+                print m.top.subType() + ".init()"
+
+                video = m.top
+
+                content = createObject("RoSGNode", "ContentNode")
+                content.URL = "http://roku.cpl.delvenetworks.com/media/59021fabe3b645968e382ac726cd6c7b/f8de8daf2ba34aeb90edc55b2d380c3f/b228eeaba0f248c48e01e158f99cd96e/rr_123_segment_1_072715.mp4"
+                content.streamformat = "mp4"
+                content.sdbifurl = "https://image.roku.com/blog/developer/files/2015/11/rr_123_segment_1_072715-sd.bif"
+                content.hdbifurl = "https://image.roku.com/blog/developer/files/2015/11/rr_123_segment_1_072715-hd.bif"
+                video.focusable = true
+                video.content = content
+                video.control = "play"
+            end function
+        ]]>
+    </script>
+
+    <children>
+        <Label text="Video should play full screen"
+            translation="[50,420]" font="font:LargeSystemFont" color="0xFFFF00FF"/>
+        <Label text="TrickPlay should work, including BIFs and trickPlay bar"
+            translation="[50,460]" font="font:LargeSystemFont" color="0xFFFF00FF"/>
+    </children>
+
+</component>

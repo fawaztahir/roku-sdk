@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!--
+ * Copyright (c) 2015 Roku, Inc. All rights reserved.
+ * This software and any compilation or derivative thereof is,
+ * and shall remain, the proprietary information of Roku, Inc. and
+ * is highly confidential in nature. Reproduction in whole or in part
+ * is prohibited without the prior written consent of Roku, Inc.
+ *
+ * Under no circumstance may this software or any derivative thereof be
+ * combined with any third party software, including open source software,
+ * without the written permission of the Copyright owner.
+-->
+
+<!-- An RSG Video node that demonstrates access to various real-time fields -->
+<component name="PositionStateErrorIndicatorVideo" extends="Video">
+
+<script type="text/brightscript">
+<![CDATA[
+    function init()
+        print m.top.subType() + ".init()"
+
+        ' Save references to objects we will be using a lot, so we don't have to use findNode() every time
+        m.video = m.top
+        m.errorCodeLabel = m.top.findNode("errorCodeLabel")
+        m.errorMsgLabel = m.top.findNode("errorMsgLabel")
+        m.positionLabel = m.top.findNode("positionLabel")
+        m.stateLabel = m.top.findNode("stateLabel")
+
+        m.video.focusable = true
+        m.video.translation = [50,50]
+        m.video.width = 640
+        m.video.height = 360
+        m.video.observeField("errorCode", "errorCodeChanged")
+        m.video.observeField("errorMsg", "errorMsgChanged")
+        m.video.observeField("position", "positionChanged")
+        m.video.observeField("state", "stateChanged")
+
+        content = createObject("RoSGNode", "ContentNode")
+        content.URL = "http://roku.cpl.delvenetworks.com/media/59021fabe3b645968e382ac726cd6c7b/f8de8daf2ba34aeb90edc55b2d380c3f/b228eeaba0f248c48e01e158f99cd96e/rr_123_segment_1_072715.mp4"
+        m.video.content = content
+        m.video.control = "play"
+    end function
+
+    function errorCodeChanged()
+        m.errorCodeLabel.text = Str(m.video.errorCode)
+    end function
+
+    function errorMsgChanged()
+        m.errorMsgLabel.text = m.video.errorMsg
+    end function
+
+    function positionChanged()
+        dsecs = m.video.position ' seconds as a double
+        m.positionLabel.text = Str(dsecs)
+    end function
+
+    function stateChanged()
+        m.stateLabel.text = m.video.state
+    end function
+
+    function onKeyEvent(key as String, press as Boolean) as Boolean
+         print "custom trickPlay.onKeyEvent()"
+         if not press
+             return false
+         end if
+
+         if key = "OK"
+             print "video state = " + m.video.state
+             if (m.video.availableAudioTracks = invalid) or (m.video.availableAudioTracks.count() = 0)
+                 print "NO audio tracks"
+             else
+                 for each track in m.video.availableAudioTracks
+                     if (track = invalid) or (track.isEmpty())
+                         print "available audio track: INVALID"
+                     else
+                         print "available audio track:"
+                         track.reset()
+                         while track.isNext()
+                             key = track.next()
+                             print "    " + key + " : " + track[key]
+                         end while
+                     end if
+                 end for
+                 print "selected audioTrack = " + m.video.audioTrack + chr(10);
+             end if
+
+             return true
+         end if
+
+         return false
+     end function
+]]>
+</script>
+
+<children>
+    <Label text="Video should play above this label"
+        translation="[0, 370]" />
+    <Label text="TrickPlay should work (with NO visual feedback)"
+        translation="[0, 400]" />
+    <Label text="State and position should update during normal playback"
+        translation="[0, 430]" />
+    <Label text="Error code and message should update iff an error occurs"
+        translation="[0, 460]" />
+
+    <Label text="Current state:"
+        translation="[0, 520]"/>
+    <Label text="--"
+        translation="[180, 520]" color="0xFFFF00FF" id="stateLabel"/>
+
+    <Label text="position:"
+        translation="[320, 520]"/>
+    <Label text="--"
+        translation="[430, 520]" color="0xFFFF00FF" id="positionLabel"/>
+
+    <Label text="Error code:"
+        translation="[0, 550]"/>
+    <Label text="--"
+        translation="[150, 550]" color="0xFFFF00FF" id="errorCodeLabel"/>
+
+    <Label text="msg:"
+        translation="[230, 550]"/>
+    <Label text="--"
+        translation="[300, 550]" color="0xFFFF00FF" id="errorMsgLabel"/>
+</children>
+
+</component>

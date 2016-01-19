@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!--
+ * Copyright (c) 2015 Roku, Inc. All rights reserved.
+ * This software and any compilation or derivative thereof is,
+ * and shall remain, the proprietary information of Roku, Inc. and
+ * is highly confidential in nature. Reproduction in whole or in part
+ * is prohibited without the prior written consent of Roku, Inc.
+ *
+ * Under no circumstance may this software or any derivative thereof be
+ * combined with any third party software, including open source software,
+ * without the written permission of the Copyright owner.
+-->
+
+<!-- An RSG Video node with width and height explicitly set to 200 and 0, respectively -->
+<component name="Size200x0Video" extends="Video">
+
+    <script type="text/brightscript">
+        <![CDATA[
+            function init()
+                print m.top.subType() + ".init()"
+                video = m.top
+
+                video.width = 200
+                video.height = 0
+                content = createObject("RoSGNode", "ContentNode")
+                content.URL = "http://roku.cpl.delvenetworks.com/media/59021fabe3b645968e382ac726cd6c7b/f8de8daf2ba34aeb90edc55b2d380c3f/b228eeaba0f248c48e01e158f99cd96e/rr_123_segment_1_072715.mp4"
+
+                video.focusable = true
+                video.content = content
+                video.control = "play"
+            end function
+        ]]>
+    </script>
+
+    <children>
+        <Label text="Video should play in a vertical banner on the left"
+            translation="[210,380]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="Size explicitly set to 200x0"
+            translation="[210,430]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+            
+    </children>
+
+</component>

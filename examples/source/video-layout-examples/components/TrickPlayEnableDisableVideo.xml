@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!--
+ * Copyright (c) 2015 Roku, Inc. All rights reserved.
+ * This software and any compilation or derivative thereof is,
+ * and shall remain, the proprietary information of Roku, Inc. and
+ * is highly confidential in nature. Reproduction in whole or in part
+ * is prohibited without the prior written consent of Roku, Inc.
+ *
+ * Under no circumstance may this software or any derivative thereof be
+ * combined with any third party software, including open source software,
+ * without the written permission of the Copyright owner.
+-->
+
+<!-- An RSG Video node that dynamically enables and disables trickplay, based on the 
+     position in the video. This would typically be used to disable trickplay during
+     advertisements.
+-->
+<component name="TrickPlayEnableDisableVideo" extends="Video">
+
+    <script type="text/brightscript">
+        <![CDATA[
+            function init()
+                print m.top.subType() + ".init()"
+
+                m.video = m.top
+                m.positionLabel = m.top.findNode("positionLabel")
+
+                m.video.observeField("position", "positionChanged")
+                m.video.notificationInterval = 0.1
+
+                content = createObject("RoSGNode", "ContentNode")
+
+                'See 00-README.txt for more video URLs
+                content.URL = "http://roku.cpl.delvenetworks.com/media/59021fabe3b645968e382ac726cd6c7b/f8de8daf2ba34aeb90edc55b2d380c3f/b228eeaba0f248c48e01e158f99cd96e/rr_123_segment_1_072715.mp4"
+                m.video.focusable = true
+                m.video.content = content
+                m.video.control = "play"
+            end function
+
+            function positionChanged()
+                position = m.video.position
+                m.positionLabel.text = str(position) + "s"
+                if (int(position / 10) mod 2) = 0
+                    m.video.enableTrickPlay = true
+                else
+                    m.video.enableTrickPlay = false
+                end if
+            end function
+        ]]>
+    </script>
+
+    <children>
+        <Label text="Video should play full screen"
+            translation="[50,400]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="TrickPlay is disabled each 10 seconds"
+            translation="[50,440]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="(0-9s:enabled, 10-19s:disabled, 20-29s:enabled, ...)"
+            translation="[150,480]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+
+        <Label text="Position:"
+            translation="[50,520]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="--"
+            id="positionLabel" translation="[210,520]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+
+    </children>
+
+</component>

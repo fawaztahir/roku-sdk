@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!--
+      * Copyright (c) 2015 Roku, Inc. All rights reserved.
+ * This software and any compilation or derivative thereof is,
+ * and shall remain, the proprietary information of Roku, Inc. and
+ * is highly confidential in nature. Reproduction in whole or in part
+ * is prohibited without the prior written consent of Roku, Inc.
+ *
+ * Under no circumstance may this software or any derivative thereof be
+ * combined with any third party software, including open source software,
+ * without the written permission of the Copyright owner.
+-->
+
+<!--
+ * This demo has been removed from the main menu, because Roku Scene Graph
+ * does not support CGMS in Roku OS 7.0. It may be available in future
+ * release.
+-->
+
+<component name="CgmsVideo" extends="Video">
+
+<script type="text/brightscript">
+<![CDATA[
+    function init()
+        print m.top.subType() + ".init()"
+
+        ' Save references to objects we will be using a lot, so we don't have to use findNode() every time
+        m.video = m.top
+        m.cgmsLabel = m.top.findNode("cgmsLabel")
+        m.errorCodeLabel = m.top.findNode("errorCodeLabel")
+        m.errorMsgLabel = m.top.findNode("errorMsgLabel")
+        m.positionLabel = m.top.findNode("positionLabel")
+        m.stateLabel = m.top.findNode("stateLabel")
+
+        m.video.focusable = true
+        m.video.translation = [50,50]
+        m.video.width = 640
+        m.video.height = 360
+        cgmsChanged()
+        m.video.observeField("cgms", "cgmsChanged")
+        m.video.observeField("errorCode", "errorCodeChanged")
+        m.video.observeField("errorMsg", "errorMsgChanged")
+        positionChanged()
+        m.video.observeField("position", "positionChanged")
+        m.video.notificationInterval = 0.1
+        stateChanged()
+        m.video.observeField("state", "stateChanged")
+
+
+        content = createObject("RoSGNode", "ContentNode")
+        content.URL = "http://roku.cpl.delvenetworks.com/media/59021fabe3b645968e382ac726cd6c7b/f8de8daf2ba34aeb90edc55b2d380c3f/b228eeaba0f248c48e01e158f99cd96e/rr_123_segment_1_072715.mp4"
+        m.video.content = content
+        m.video.control = "play"
+    end function
+
+    function cgmsChanged()
+        m.cgmsLabel.text = m.video.cgms
+    end function
+
+    function errorCodeChanged()
+        m.errorCodeLabel.text = Str(m.video.errorCode)
+    end function
+
+    function errorMsgChanged()
+        m.errorMsgLabel.text = m.video.errorMsg
+    end function
+
+    function positionChanged()
+        dsecs = m.video.position ' seconds as a double
+        m.positionLabel.text = Str(dsecs)
+
+        index = (int(dsecs) / 60) mod 4
+        if index = 0
+            newCgms = "norestriction"
+        else if index = 1
+            newCgms = "copynomore"
+        else if index = 2
+            newCgms = "copyonce"
+        else if index = 3
+            newCgms = "copynever"
+        end if
+
+        prevCgms = m.video.cgms
+        if (prevCgms = invalid) or (newCgms <> prevCgms)
+            msg = "Setting cgms to " + newCgms + ", was "
+            if prevCgms = invalid
+                msg = msg + "invalid"
+            else
+                msg = msg + prevCgms
+            end if
+            print msg
+            m.video.cgms = newCgms
+        end if
+    end function
+
+    function stateChanged()
+        m.stateLabel.text = m.video.state
+    end function
+
+    function onKeyEvent(key as String, press as Boolean) as Boolean
+         print "custom trickPlay.onKeyEvent()"
+         if not press
+             return false
+         end if
+
+         if key = "OK"
+             print "video state = " + m.video.state
+             print "cgms = " + m.video.cgms
+             return true
+         end if
+
+         return false
+     end function
+]]>
+</script>
+
+<children>
+    <Label text="Video should play above this label"
+        translation="[0, 370]" />
+    <Label text="State, cgms, and position should update"
+        translation="[0, 400]" />
+    <Label text="CGMS should update each minute: 0-59s: norestriction, 60-119s: copynomore,"
+        translation="[0, 430]" />
+    <Label text="         120-179s: copyonce, 180-239s: copynever (and then repeat)"
+        translation="[0, 460]" />
+
+    <Label text="Current state:"
+        translation="[0, 520]"/>
+    <Label text="--"
+        translation="[170, 520]" color="0xFFFF00FF" id="stateLabel"/>
+
+    <Label text="cgms:"
+        translation="[290, 520]"/>
+    <Label text="--"
+        translation="[370, 520]" color="0xFFFF00FF" id="cgmsLabel"/>
+
+    <Label text="position:"
+        translation="[540, 520]"/>
+    <Label text="--"
+        translation="[640, 520]" color="0xFFFF00FF" id="positionLabel"/>
+
+    <Label text="Error code:"
+        translation="[0, 550]"/>
+    <Label text="--"
+        translation="[150, 550]" color="0xFFFF00FF" id="errorCodeLabel"/>
+
+    <Label text="msg:"
+        translation="[230, 550]"/>
+    <Label text="--"
+        translation="[300, 550]" color="0xFFFF00FF" id="errorMsgLabel"/>
+</children>
+
+</component>

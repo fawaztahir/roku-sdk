@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8" ?> 
+
+<!--
+ * Copyright (c) 2015 Roku, Inc. All rights reserved.
+ * This software and any compilation or derivative thereof is,
+ * and shall remain, the proprietary information of Roku, Inc. and
+ * is highly confidential in nature. Reproduction in whole or in part
+ * is prohibited without the prior written consent of Roku, Inc.
+ *
+ * Under no circumstance may this software or any derivative thereof be
+ * combined with any third party software, including open source software,
+ * without the written permission of the Copyright owner.
+-->
+
+<!-- The main scene of the Video Examples app -->
+<component name="MainScene" extends="Scene" initialFocus="MainMenu" >
+
+<interface>
+   <field id="currentTest" type="string" value="none"/>
+</interface>
+
+<script type="text/brightscript" uri="pkg:/source/utils.brs" />
+<script type="text/brightscript" >
+<![CDATA[
+
+  ' Putting this at the top of the file, so it's easy to find and maintain
+  sub addSamples()
+     addOneSample("Explicit Size and Location",         "ExplicitSizeLocationVideo")
+     addOneSample("No Size or Translation",             "NoSizeNoTranslationVideo")
+     addOneSample("1280x720 Video",                     "Size1280x720Video")
+     addOneSample("0x0 Video",                          "Size0x0Video")
+     addOneSample("0x200 Video",                        "Size0x200Video")
+     addOneSample("200x0 Video",                        "Size200x0Video")
+     addOneSample("Video in a Group",                   "VideoGroup")
+     addOneSample("Position/State/Error Indicators",    "PositionStateErrorIndicatorVideo")
+     addOneSample("Adjustable Update Position Indicator",   "AdjustablePositionIndicatorVideo")
+     addOneSample("Full Screen with BIFs",              "FullScreenWithBifsVideo")
+     addOneSample("Custom TrickPlay - Full Screen",     "FullScreenCustomTrickPlayVideo")
+     addOneSample("TrickPlay Enable/Disable",           "TrickPlayEnableDisableVideo")
+     addOneSample("Download Segment Info",              "SegmentInfoVideo")
+     addOneSample("CC",                                 "FullScreenWithClosedCaptionsVideo")
+     addOneSample("Multiple Audio Tracks",              "MultipleAudioTrackVideo")
+     addOneSample("Custom HUD",                         "FullScreenCustomHudVideo")
+     addOneSample("TrickPlay Custom Colors",            "FullScreenCustomColorsVideo")
+  end sub
+
+  sub addOneSample(label as string, component as string)
+
+     testListItemContent = createObject("RoSGNode", "ContentNode")
+     testListItemContent.title = label
+
+     m.testListContent.AppendChild(testListItemContent)
+
+     m.menuItems.Push(component)
+  end sub
+
+  sub listItemSelected()
+    print "in listItemSelected"; m.list
+    selectedItem = m.list.itemSelected
+    print "-- selected item "; selectedItem
+
+    if (selectedItem >= 0) and (selectedItem < m.testListContent.GetChildCount())
+
+        selectedComponent = m.menuItems.GetEntry(selectedItem)
+        print "SelectedComponent is "; selectedComponent
+        m.top.currentTest = selectedComponent
+
+        m.overhang.visible = false
+        m.list.visible = false
+        
+        m.CurrentTest = CreateObject("RoSGNode", selectedComponent)
+        m.CurrentTest.id = "CURRENT_TEST"
+        m.top.AppendChild(m.CurrentTest)
+
+        initialFocus = m.CurrentTest.initialFocus
+        if (initialFocus <> invalid)
+            initialFocus.SetFocus(true)
+        else
+            m.CurrentTest.SetFocus(true)
+        endif
+    end if
+  end sub
+
+  function onKeyEvent(key as String, press as Boolean) as Boolean
+      print "in testList.xml onKeyEvent() key=";key;" press="; press
+      if press then
+          if key = "back"
+              if not (m.CurrentTest = invalid)
+                 print "CLEANING UP m.CURRENT_TEST"
+                 m.top.RemoveChild(m.CurrentTest)
+                 m.CurrentTest = invalid
+
+                 m.overhang.visible = true
+                 m.list.visible = true
+                 m.list.SetFocus(true)
+
+                 return true
+              end if
+          else if key = "home"
+              m.top.RemoveChild(m.CurrentTest)
+              m.CurrentTest = invalid
+          end if
+      end if
+      return false
+  end function
+
+  sub init()
+
+     print chr(10) + "================== UI STARTING ==================" 
+     print m.top.subType() + ".init()"
+
+     m.overhang = m.top.findNode("overhang")
+
+     m.testListContent = createObject("RoSGNode", "ContentNode")
+     m.menuItems = createObject("RoArray", 3, true)
+     addSamples()
+
+     m.list = m.top.FindNode("MainMenu")
+     m.list.content = m.testListContent
+
+     m.list.ObserveField("itemSelected", "listItemSelected")
+
+     ' set focus on the Scene (which will set focus on the initialFocus node)
+     m.top.setFocus(true)
+
+  end sub
+]]>
+</script>
+
+<children>
+
+    <Overhang id="overhang" title="Channel Title" logoUri="pkg:/images/roku_dev_logo.png"/>
+
+    <LabelList 
+        id="MainMenu"
+        translation="[100, 120]"
+        itemSize="[1000, 46]"
+        itemSpacing="[0, 0]"
+        numRows="10"
+        focusRow="0" >
+    </LabelList>
+</children>
+
+</component>
+
+

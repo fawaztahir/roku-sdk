@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!--
+ * Copyright (c) 2015 Roku, Inc. All rights reserved.
+ * This software and any compilation or derivative thereof is,
+ * and shall remain, the proprietary information of Roku, Inc. and
+ * is highly confidential in nature. Reproduction in whole or in part
+ * is prohibited without the prior written consent of Roku, Inc.
+ *
+ * Under no circumstance may this software or any derivative thereof be
+ * combined with any third party software, including open source software,
+ * without the written permission of the Copyright owner.
+-->
+
+<!--
+ * This example has been removed from the main menu, due to the lack
+ * of a licensed video with timed meta data that can be used for a demo. 
+ * When a video becomes available, this example should be updated and
+ * added back into the main menu.
+-->
+
+<component name="TimedMetaDataVideo" extends="Video">
+
+    <script type="text/brightscript">
+        <![CDATA[
+            function init()
+                print m.top.subType() + ".init()"
+                m.video = m.top
+                m.keyIndex = 0
+
+                m.metaDataLabel = m.top.findNode("metaDataLabel")
+                m.positionLabel = m.top.findNode("positionLabel")
+                m.timeStampLabel = m.top.findNode("timeStampLabel")
+
+                m.video.observeField("timedMetaData", "timedMetaDataChanged")
+                m.video.timedMetadataSelectionKeys = ["*"]
+                m.video.observeField("position", "positionChanged")
+                m.video.notificationInterval = 0.1
+
+                content = createObject("RoSGNode", "ContentNode")
+
+                'content.URL = "http://mediadelivery.mlbcontrol.net/2015/hls_testbeds/ads_302/master_wired_fwv2.m3u8"
+                'content.streamformat = "hls"
+
+                content.URL = "http://vevoplaylist-live.hls.adaptive.level3.net/vevo/ch1/appleman.m3u8"
+                content.streamformat = "hls"
+
+                m.video.content = content
+                m.video.control = "play"
+            end function
+
+            function onKeyEvent(key as String, press as Boolean) as Boolean
+                print "metdatatest.onKeyEvent()"
+                if not press
+                    return false
+                end if
+
+                if key = "OK"
+                    dumpMetaData()
+                    return true
+                else if key = "up"
+                    m.keyIndex = m.keyIndex + 1
+                    if (m.keyIndex > 3)
+                        m.keyIndex = 0
+                    end if
+                    if m.keyIndex = 0
+                        print "no timed metadata"
+                        m.video.timedMetadataSelectionKeys = invalid
+                    else if m.keyIndex = 1
+                        print "no timed metadata"
+                        m.video.timedMetadataSelectionKeys = []
+                    else if m.keyIndex = 2
+                        print "all timed metadata"
+                        m.video.timedMetadataSelectionKeys = ["*"]
+                    else if m.keyIndex = 3
+                        print "only timed metadata matching PRIV,TOFN,TSRC"
+                        m.video.timedMetadataSelectionKeys = ["PRIV","TOFN","TSRC"]
+                    end if
+                end if
+
+                return false
+            end function ' onKeyEvent()
+
+            function positionChanged()
+                m.positionLabel.text = str(m.video.position)
+            end function
+
+            function timedMetaDataChanged()
+                print "timedMetaDataChanged()"
+                m.metaDataLabel.text = buildMetaDataString()
+                metaData = m.video.timedMetaData
+                if (metaData = invalid) OR (metaData["_decodeInfo_pts"] = invalid)
+                    m.timeStampLabel.text = "--"
+                else
+                    m.timeStampLabel.text = Str(metaData["_decodeInfo_pts"]) + "s"
+                end if
+                dumpMetaData()
+            end function
+
+            function buildMetaDataString() as String
+                s = ""
+                metaData = m.video.timedMetaData
+                if (metaData = invalid) or (metaData.count() = 0)
+                    s = "<<NONE>>"
+                else
+                    s = "keys=["
+                    i = -1
+                    metaData.reset()
+                    while metaData.isNext()
+                        if len(s) > 50
+                            s = s + "..."
+                            exit while
+                        end if
+
+                        i = i + 1
+                        key = metaData.next()
+                        if (i > 0)
+                            s = s + ", "
+                        end if
+                        s = s + key
+                    end while
+                    s = s + "]"
+                end if
+                return s
+            end function
+ 
+            function dumpMetaData()
+                print "video state = " + m.video.state
+                metaData = m.video.timedMetaData
+                if (metaData = invalid) or (metaData.count() = 0)
+                    print "NO timed meta data"
+                else
+                    print "metaData size = " + str(metaData.count())
+                    metaData.reset()
+                    while metaData.isNext()
+                        key = metaData.next()
+                        value = metaData[key]
+                        if type(value) = "roString"
+                            print "    " + key + " : " + metaData[key]
+                        else
+                            print "    " + key + " : " + str(metaData[key])
+                        end if
+                    end while
+                end if
+            end function
+        ]]>
+    </script>
+
+    <children>
+        <Label text="Video should play full screen"
+            translation="[50,400]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+
+        <Label text="Current position:"
+            translation="[50,440]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="--"
+            id="positionLabel" translation="[320,440]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+
+        <Label text="TimedMetaData:"
+            translation="[50,500]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="--"
+            id="metaDataLabel" translation="[300,500]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+
+        <Label text="TimedMetaData timestamp:"
+            translation="[50,540]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+        <Label text="--"
+            id="timeStampLabel" translation="[475,540]" font="font:LargeBoldSystemFont" color="0xFFFF00FF"/>
+    </children>
+
+</component>
