@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="HelloWorld" extends="Scene"> 
+	<children>
+      <Label id="myLabel" 
+      	text="Hello World!"
+      	width="1000" 
+      	height="500" 
+      	font="font:LargeBoldSystemFont" 
+      	horizAlign="center"
+      	vertAlign="center" 
+      	/>
+    </children>
+<!-- BrightScript Portion -->
+<script type="text/brightscript" >
+<![CDATA[
+    function init()
+    end function
+]]>
+</script>
+<!-- End of BrightScript Portion -->
+</component>
