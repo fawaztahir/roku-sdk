@@ -13,7 +13,7 @@
 <script type="text/brightscript" >
 <![CDATA[
     '** 
-    '** Example: How to edit a SceneGraph component using BrightScript
+    '** Example: Edit the Label component with BrightScript
     '**
 
     function init()
@@ -30,8 +30,6 @@
       '** The full list of editable attributes can be located at:
       '** http://sdkdocs.roku.com/display/sdkdoc/Label#Label-Fields
       '**
-
-
     end function
 ]]>
 </script>
