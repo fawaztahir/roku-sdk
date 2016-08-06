@@ -1,7 +1,7 @@
 '*************************************************************
 '** Video Layout Examples 
 '** Copyright (c) 2015 Roku, Inc.  All rights reserved.
-'** Use of the Roku Platform is subject to the SDK Licence Agreement:
+'** Use of the Roku Platform is subject to the SDK License Agreement:
 '** https://docs.roku.com/doc/developersdk/en-us
 '*************************************************************
 
